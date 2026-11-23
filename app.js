@@ -49,10 +49,10 @@ function renderDays(id, countColumn) {
 renderDays('buggies-per-day', 1);
 renderDays('hills-per-day', 2);
 
-const leaders = pushers.map(([name, ...counts], index) => ({
+const rankedPushers = pushers.map(([name, ...counts], index) => ({
   name, index, total: counts.reduce((sum, count) => sum + count, 0),
-})).sort((a, b) => b.total - a.total).slice(0, 5);
-for (const { name, index, total } of leaders) {
+})).sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, undefined, { numeric: true }));
+for (const { name, index, total } of rankedPushers.slice(0, 5)) {
   const row = make('li');
   const link = make('a', name);
   link.href = '#pusher-' + index;
@@ -60,142 +60,180 @@ for (const { name, index, total } of leaders) {
   el('leaders').append(row);
 }
 
-const mode = el('mode');
 const selection = el('selection');
-const wheel = el('wheel');
 const center = 360;
 const outerRadius = 340;
 const innerRadius = 153;
 const origin = -Math.PI / 2;
 const tau = Math.PI * 2;
-const canvas = make('canvas');
-canvas.width = canvas.height = center * 2;
-canvas.setAttribute('aria-hidden', 'true');
-const tooltip = make('div', undefined, 'slice-tooltip');
-tooltip.setAttribute('aria-hidden', 'true');
-tooltip.hidden = true;
-wheel.append(canvas, tooltip);
-const ctx = canvas.getContext('2d');
-let frame;
-let slices = [];
-let sweepAngle = origin;
 
-function showSlice(event) {
-  const rect = canvas.getBoundingClientRect();
-  const x = (event.clientX - rect.left) / rect.width * canvas.width - center;
-  const y = (event.clientY - rect.top) / rect.height * canvas.height - center;
-  const radius = Math.hypot(x, y);
-  const angle = (Math.atan2(y, x) - origin + tau) % tau + origin;
-  const slice = radius >= innerRadius && radius <= outerRadius && angle < sweepAngle
-    ? slices.find(part => angle < part.end)
-    : undefined;
-  tooltip.hidden = !slice;
-  if (slice) tooltip.textContent = slice.name + ' · ' + slice.count;
-}
+function createBreakdown(container) {
+  const layout = make('div', undefined, 'breakdown');
+  const wheel = make('div', undefined, 'wheel');
+  const details = make('div');
+  const title = make('h2');
+  const note = make('p', undefined, 'muted');
+  const legend = make('ul');
+  details.append(title, note, legend);
+  layout.append(wheel, details);
+  container.append(layout);
 
-canvas.addEventListener('pointermove', showSlice);
-canvas.addEventListener('pointerdown', showSlice);
-canvas.addEventListener('pointerleave', () => { tooltip.hidden = true; });
-canvas.addEventListener('pointercancel', () => { tooltip.hidden = true; });
-
-function draw(parts, total) {
-  cancelAnimationFrame(frame);
+  const canvas = make('canvas');
+  canvas.width = canvas.height = center * 2;
+  canvas.setAttribute('aria-hidden', 'true');
+  const tooltip = make('div', undefined, 'slice-tooltip');
+  tooltip.setAttribute('aria-hidden', 'true');
   tooltip.hidden = true;
-  sweepAngle = origin;
-  if (!ctx) return;
-  const ink = getComputedStyle(wheel).color;
-  const start = performance.now();
-  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let cumulative = 0;
-  slices = parts.map(part => {
-    const from = origin + tau * cumulative / total;
-    cumulative += part.count;
-    return { ...part, from, end: origin + tau * cumulative / total };
-  });
-  function paint(now) {
-    const progress = motion ? Math.min(1, (now - start) / 650) : 1;
-    sweepAngle = origin + tau * (1 - (1 - progress) ** 3);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (const part of slices) {
-      const revealed = Math.min(part.end, sweepAngle);
-      if (revealed <= part.from) break;
-      ctx.beginPath();
-      ctx.arc(center, center, outerRadius, part.from, revealed);
-      ctx.arc(center, center, innerRadius, revealed, part.from, true);
-      ctx.closePath();
-      ctx.fillStyle = part.color;
-      ctx.fill();
-    }
-    ctx.fillStyle = ink;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = '700 68px system-ui';
-    ctx.fillText(total, center, center);
-    if (progress < 1) frame = requestAnimationFrame(paint);
+  wheel.append(canvas, tooltip);
+
+  const ctx = canvas.getContext('2d');
+  let frame;
+  let slices = [];
+  let sweepAngle = origin;
+
+  function showSlice(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width * canvas.width - center;
+    const y = (event.clientY - rect.top) / rect.height * canvas.height - center;
+    const radius = Math.hypot(x, y);
+    const angle = (Math.atan2(y, x) - origin + tau) % tau + origin;
+    const slice = radius >= innerRadius && radius <= outerRadius && angle < sweepAngle
+      ? slices.find(part => angle < part.end)
+      : undefined;
+    tooltip.hidden = !slice;
+    if (slice) tooltip.textContent = slice.name + ' · ' + slice.count;
   }
-  frame = requestAnimationFrame(paint);
+
+  canvas.addEventListener('pointermove', showSlice);
+  canvas.addEventListener('pointerdown', showSlice);
+  canvas.addEventListener('pointerleave', () => { tooltip.hidden = true; });
+  canvas.addEventListener('pointercancel', () => { tooltip.hidden = true; });
+
+  function draw(total, animate) {
+    cancelAnimationFrame(frame);
+    tooltip.hidden = true;
+    sweepAngle = origin;
+    if (!ctx) return;
+    const ink = getComputedStyle(wheel).color;
+    const start = performance.now();
+    const motion = animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function paint(now) {
+      const progress = motion ? Math.min(1, (now - start) / 650) : 1;
+      sweepAngle = origin + tau * (1 - (1 - progress) ** 3);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const part of slices) {
+        const revealed = Math.min(part.end, sweepAngle);
+        if (revealed <= part.from) break;
+        ctx.beginPath();
+        ctx.arc(center, center, outerRadius, part.from, revealed);
+        ctx.arc(center, center, innerRadius, revealed, part.from, true);
+        ctx.closePath();
+        ctx.fillStyle = part.color;
+        ctx.fill();
+      }
+      ctx.fillStyle = ink;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '700 68px system-ui';
+      ctx.fillText(total, center, center);
+      if (progress < 1) frame = requestAnimationFrame(paint);
+    }
+    frame = requestAnimationFrame(paint);
+  }
+
+  return function render(label, rows, animate) {
+    const total = rows.reduce((sum, [, count]) => sum + count, 0);
+    let cumulative = 0;
+    slices = rows.map(([name, count, hill], i) => {
+      const from = origin + tau * cumulative / total;
+      cumulative += count;
+      return {
+        name, count, from, end: origin + tau * cumulative / total,
+        color: colors[(hill ?? i) % colors.length],
+      };
+    });
+    title.textContent = label;
+    note.textContent = total + (total === 1 ? ' assignment' : ' assignments');
+    legend.replaceChildren(...slices.map(({ name, count, color }) => {
+      const li = make('li');
+      const dot = make('span', undefined, 'dot');
+      dot.style.background = color;
+      li.append(dot, make('span', name), make('strong', count + ' · ' + (100 * count / total).toFixed(1) + '%'));
+      return li;
+    }));
+    draw(total, animate);
+  };
 }
 
-function updateChart() {
-  const byHill = mode.value === 'hill';
+const hillCharts = season.hills.map(([label], index) => {
+  const card = make('article', undefined, 'card');
+  el('hill-charts').append(card);
+  const render = createBreakdown(card);
+  const rows = pushers.map(([name, ...counts]) => [name, counts[index]])
+    .filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]);
+  return animate => render(label, rows, animate);
+});
+
+for (const { name, index, total } of rankedPushers) {
+  const option = make('option', name + ' · ' + total);
+  option.value = index;
+  selection.append(option);
+}
+
+const renderPusherChart = createBreakdown(el('pusher-chart'));
+const partnerLabels = ['Most received from', 'Most pushes to', 'Most exchanges overall'];
+
+function updatePusher(animate) {
   const index = Number(selection.value);
-  const label = byHill ? season.hills[index][0] : pushers[index][0];
-  const rows = byHill
-    ? pushers.map(([name, ...counts]) => [name, counts[index]]).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1])
-    : season.hills.map(([name], hill) => [name, pushers[index][hill + 1], hill]).filter(([, count]) => count > 0);
-  const parts = rows.map(([name, count, hill], i) => {
-    const palette = hill ?? i;
-    return { name, count, color: colors[palette % colors.length] };
-  });
-  const total = parts.reduce((sum, part) => sum + part.count, 0);
-  el('chart-title').textContent = label;
-  el('chart-note').textContent = total + (total === 1 ? ' assignment' : ' assignments');
-  el('legend').replaceChildren(...parts.map(({ name, count, color }) => {
-    const li = make('li');
-    const dot = make('span', undefined, 'dot');
-    dot.style.background = color;
-    const label = make('span', name);
-    li.append(dot, label, make('strong', count + ' · ' + (100 * count / total).toFixed(1) + '%'));
-    return li;
+  const [name, ...counts] = pushers[index];
+  const rows = season.hills.map(([hill], i) => [hill, counts[i], i]).filter(([, count]) => count > 0);
+  renderPusherChart(name, rows, animate);
+  el('partner-results').replaceChildren(...favoritePartners[index].map((partner, i) => {
+    const item = make('div');
+    const result = make('dd');
+    if (partner) {
+      const [otherIndex, count] = partner;
+      const link = make('a', pushers[otherIndex][0]);
+      link.href = '#pusher-' + otherIndex;
+      result.append(link, make('span', ' · ' + count, 'muted'));
+    } else {
+      result.textContent = 'None logged';
+    }
+    item.append(make('dt', partnerLabels[i]), result);
+    return item;
   }));
-  draw(parts, total);
 }
 
-function updateSelection(index = 0) {
-  const byHill = mode.value === 'hill';
-  el('selection-label').textContent = byHill ? 'Hill' : 'Pusher';
-  selection.replaceChildren(...(byHill ? season.hills : pushers).map(([name], index) => {
-    const option = make('option', name);
-    option.value = index;
-    return option;
-  }));
-  selection.value = index;
-  updateChart();
+function renderActive(animate) {
+  if (!el('explore').hidden) hillCharts.forEach(render => render(animate));
+  if (!el('pushers').hidden) updatePusher(animate);
 }
 
 function route() {
   const pusherMatch = /^#pusher-(\d+)$/.exec(location.hash);
   const pusherIndex = pusherMatch ? Number(pusherMatch[1]) : -1;
   const showPusher = Boolean(pushers[pusherIndex]);
-  const active = location.hash === '#explore' || showPusher ? 'explore' : 'overview';
-  for (const id of ['overview', 'explore']) {
+  const active = location.hash === '#explore' ? 'explore'
+    : location.hash === '#pushers' || showPusher ? 'pushers' : 'overview';
+  for (const id of ['overview', 'explore', 'pushers']) {
     el(id).hidden = id !== active;
     const link = document.querySelector('nav a[href="#' + id + '"]');
     if (id === active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }
   if (showPusher) {
-    mode.value = 'pusher';
-    updateSelection(pusherIndex);
+    selection.value = pusherIndex;
     window.scrollTo(0, 0);
-  } else if (active === 'explore') {
-    updateChart();
   }
+  renderActive(true);
 }
 
-mode.addEventListener('change', () => updateSelection());
-selection.addEventListener('change', updateChart);
+selection.addEventListener('change', () => {
+  history.replaceState(null, '', '#pusher-' + selection.value);
+  updatePusher(true);
+});
 window.addEventListener('hashchange', route);
+
 const colorTheme = el('color-theme');
 colorTheme.value = document.documentElement.dataset.theme ?? 'system';
 colorTheme.addEventListener('change', () => {
@@ -204,10 +242,9 @@ colorTheme.addEventListener('change', () => {
   try {
     localStorage.setItem('rolls-color-theme', colorTheme.value);
   } catch {}
-  if (!el('explore').hidden) updateChart();
+  renderActive(false);
 });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-  if (!el('explore').hidden && colorTheme.value === 'system') updateChart();
+  if (colorTheme.value === 'system') renderActive(false);
 });
-updateSelection();
 route();

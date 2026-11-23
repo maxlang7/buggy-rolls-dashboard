@@ -160,10 +160,8 @@ h2 {
   writing-mode:vertical-rl;
   justify-self:center;
 }
-.controls {
-  display:grid;
-  grid-template-columns:1fr 1.5fr;
-  gap:12px;
+.pusher-picker {
+  max-width:22rem;
 }
 label {
   display:grid;
@@ -243,7 +241,7 @@ footer {
 @media(max-width:720px){.charts,.breakdown {
   grid-template-columns:1fr;
 }
-.stats,.controls {
+.stats {
   grid-template-columns:1fr 1fr;
 }
 .card,.stat {
@@ -282,4 +280,45 @@ footer {
   .top { gap: 4px 8px; flex-wrap: wrap; padding-top: 8px; }
   .top nav { order: 1; width: 100%; margin-left: 0; }
   .top nav a { padding: 5px 8px; }
+}
+
+.hill-charts {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:14px;
+}
+
+.hill-charts .breakdown {
+  gap:18px;
+  padding:0;
+}
+
+.hill-charts ul {
+  max-height:220px;
+}
+
+.partners {
+  border-top:1px solid var(--line);
+  padding-top:18px;
+}
+
+.partners dl {
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(165px, 1fr));
+  gap:12px;
+  margin:0;
+}
+
+.partners dt {
+  color:var(--muted);
+  font-size:.875rem;
+}
+
+.partners dd {
+  margin:0;
+  font-weight:700;
+}
+
+@media (max-width: 720px) {
+  .hill-charts { grid-template-columns:1fr; }
 }
