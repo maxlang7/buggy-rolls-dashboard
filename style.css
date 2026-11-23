@@ -304,6 +304,15 @@ footer {
   font-weight:700;
 }
 
+.fall-photo {
+  display:block;
+  width:100%;
+  max-width:25rem;
+  height:auto;
+  margin-top:10px;
+  border-radius:10px;
+}
+
 #driver-chart .breakdown {
   gap:18px;
   padding:0;

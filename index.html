@@ -12,7 +12,7 @@
     if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
   } catch {}
 </script>
-<link rel="stylesheet" href="style.css?v=fun-stats">
+<link rel="stylesheet" href="style.css?v=fall-photo">
 <script defer src="data.js?v=overview-totals"></script>
 <script defer src="app.js?v=fun-stats"></script>
 </head>
@@ -40,7 +40,12 @@
     <article class="card">
       <dl class="fun-records">
         <div><dt>Most shove-offs</dt><dd id="shove-off-record"></dd></div>
-        <div><dt>Most falls</dt><dd>Max L · 1</dd></div>
+        <div>
+          <dt>Most falls</dt>
+          <dd>Max L · 1
+            <img class="fall-photo" src="max-fall.png" width="1274" height="870" loading="lazy" alt="Max L falling on the course as the buggy rolls ahead.">
+          </dd>
+        </div>
       </dl>
     </article>
     <article class="card" id="driver-chart"></article>
