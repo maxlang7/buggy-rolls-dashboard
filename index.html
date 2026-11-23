@@ -11,13 +11,13 @@
     if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
   } catch {}
 </script>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=donut-hover">
 <script defer src="data.js"></script>
-<script defer src="app.js"></script>
+<script defer src="app.js?v=donut-hover"></script>
 </head>
 <body>
 <header><div class="shell top">
-  <a class="brand" href="#overview"><span aria-hidden="true">◉</span> SDC Buggy Rolls</a>
+  <a class="brand" href="#overview">SDC Buggy Rolls</a>
   <nav aria-label="Dashboard"><a href="#overview">Overview</a><a href="#explore">Explore</a></nav>
   <select id="color-theme" aria-label="Color theme">
     <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>

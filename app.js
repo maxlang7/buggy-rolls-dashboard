@@ -62,43 +62,75 @@ for (const { name, index, total } of leaders) {
 
 const mode = el('mode');
 const selection = el('selection');
+const wheel = el('wheel');
+const center = 360;
+const outerRadius = 340;
+const innerRadius = 153;
+const origin = -Math.PI / 2;
+const tau = Math.PI * 2;
 const canvas = make('canvas');
-canvas.width = canvas.height = 720;
+canvas.width = canvas.height = center * 2;
 canvas.setAttribute('aria-hidden', 'true');
-el('wheel').append(canvas);
+const tooltip = make('div', undefined, 'slice-tooltip');
+tooltip.setAttribute('aria-hidden', 'true');
+tooltip.hidden = true;
+wheel.append(canvas, tooltip);
 const ctx = canvas.getContext('2d');
 let frame;
+let slices = [];
+let sweepAngle = origin;
+
+function showSlice(event) {
+  const rect = canvas.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / rect.width * canvas.width - center;
+  const y = (event.clientY - rect.top) / rect.height * canvas.height - center;
+  const radius = Math.hypot(x, y);
+  const angle = (Math.atan2(y, x) - origin + tau) % tau + origin;
+  const slice = radius >= innerRadius && radius <= outerRadius && angle < sweepAngle
+    ? slices.find(part => angle < part.end)
+    : undefined;
+  tooltip.hidden = !slice;
+  if (slice) tooltip.textContent = slice.name + ' · ' + slice.count;
+}
+
+canvas.addEventListener('pointermove', showSlice);
+canvas.addEventListener('pointerdown', showSlice);
+canvas.addEventListener('pointerleave', () => { tooltip.hidden = true; });
+canvas.addEventListener('pointercancel', () => { tooltip.hidden = true; });
 
 function draw(parts, total) {
   cancelAnimationFrame(frame);
+  tooltip.hidden = true;
+  sweepAngle = origin;
   if (!ctx) return;
-  const ink = getComputedStyle(el('wheel')).color;
+  const ink = getComputedStyle(wheel).color;
   const start = performance.now();
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const tau = Math.PI * 2;
+  let cumulative = 0;
+  slices = parts.map(part => {
+    const from = origin + tau * cumulative / total;
+    cumulative += part.count;
+    return { ...part, from, end: origin + tau * cumulative / total };
+  });
   function paint(now) {
     const progress = motion ? Math.min(1, (now - start) / 650) : 1;
-    const sweep = 1 - (1 - progress) ** 3;
-    ctx.clearRect(0, 0, 720, 720);
-    const origin = -Math.PI / 2;
-    let angle = origin;
-    for (const part of parts) {
-      const end = angle + tau * part.count / total;
-      const revealed = Math.min(end, origin + tau * sweep);
-      if (revealed <= angle) break;
+    sweepAngle = origin + tau * (1 - (1 - progress) ** 3);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const part of slices) {
+      const revealed = Math.min(part.end, sweepAngle);
+      if (revealed <= part.from) break;
       ctx.beginPath();
-      ctx.arc(360, 360, 340, angle, revealed);
-      ctx.arc(360, 360, 153, revealed, angle, true);
+      ctx.arc(center, center, outerRadius, part.from, revealed);
+      ctx.arc(center, center, innerRadius, revealed, part.from, true);
       ctx.closePath();
       ctx.fillStyle = part.color;
       ctx.fill();
-      angle = end;
     }
     ctx.fillStyle = ink;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '700 68px system-ui';
-    ctx.fillText(total, 360, 360);
+    ctx.fillText(total, center, center);
     if (progress < 1) frame = requestAnimationFrame(paint);
   }
   frame = requestAnimationFrame(paint);

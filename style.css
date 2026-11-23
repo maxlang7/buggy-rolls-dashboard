@@ -42,9 +42,6 @@ a {
   text-decoration:none;
   white-space:nowrap;
 }
-.brand span {
-  margin-right:6px;
-}
 nav {
   display:flex;
   gap:8px;
@@ -193,6 +190,7 @@ select {
   padding:24px 0;
 }
 .wheel {
+  position:relative;
   width:min(100%,350px);
   margin:auto;
   aspect-ratio:1;
@@ -201,6 +199,21 @@ select {
   display:block;
   width:100%;
   height:100%;
+}
+.slice-tooltip {
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  pointer-events:none;
+  width:max-content;
+  max-width:100%;
+  padding:5px 10px;
+  border-radius:7px;
+  background:var(--ink);
+  color:var(--card);
+  font-size:.875rem;
+  font-weight:700;
 }
 ul {
   padding:0;
