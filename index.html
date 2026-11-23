@@ -5,19 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Buggy rolls, hill assignments, and the 2026–27 season in numbers.">
 <title>SDC Buggy Rolls | 2026–27</title>
+<script>
+  try {
+    const savedTheme = localStorage.getItem('rolls-color-theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
+  } catch {}
+</script>
 <link rel="stylesheet" href="style.css">
 <script defer src="data.js"></script>
 <script defer src="app.js"></script>
 </head>
 <body>
-<header><div class="shell top"><a class="brand" href="#overview"><span aria-hidden="true">◉</span> SDC Buggy Rolls</a><nav aria-label="Dashboard"><a href="#overview">Overview</a><a href="#explore">Explore</a></nav></div></header>
+<header><div class="shell top">
+  <a class="brand" href="#overview"><span aria-hidden="true">◉</span> SDC Buggy Rolls</a>
+  <nav aria-label="Dashboard"><a href="#overview">Overview</a><a href="#explore">Explore</a></nav>
+  <select id="color-theme" aria-label="Color theme">
+    <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
+  </select>
+</div></header>
 <main class="shell">
 <section id="overview">
 <div class="intro"><p class="season">2026–27 season</p><h1>Rolls in review</h1><p>Team totals from the rolls log.</p></div>
 <div class="stats" id="stats"></div>
 <div class="charts">
 <article class="card"><h2>Assignments by hill</h2><div id="hill-bars" class="bars"></div></article>
-<article class="card"><h2>Runs per rolls day</h2><p class="muted">Completed log entries, excluding scratches.</p><div id="days" class="days"></div></article>
+<article class="card"><h2>Most hill assignments</h2><ol id="leaders" class="leaders"></ol></article>
+<article class="card"><h2>Buggies rolled per day</h2><p class="muted">Completed rolls, excluding scratches.</p><div id="buggies-per-day" class="days"></div></article>
+<article class="card"><h2>Hills pushed per day</h2><p class="muted">Each occupied hill slot counts once.</p><div id="hills-per-day" class="days"></div></article>
 </div>
 </section>
 <section id="explore" hidden>

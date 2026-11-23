@@ -1,11 +1,11 @@
 :root {
-  color-scheme:light;
-  --ink:#142643;
-  --muted:#526581;
-  --line:#dbe4f0;
-  --page:#f3f6fb;
-  --blue:#184987;
-  --card:#fff;
+  color-scheme: light dark;
+  --ink:light-dark(#142643, #e9efff);
+  --muted:light-dark(#526581, #adbed9);
+  --line:light-dark(#dbe4f0, #354564);
+  --page:light-dark(#f3f6fb, #101a2b);
+  --blue:light-dark(#184987, #a1c7ff);
+  --card:light-dark(#fff, #18253b);
   font:16px/1.55 system-ui,sans-serif;
 }
 * {
@@ -55,7 +55,7 @@ nav a {
   text-decoration:none;
 }
 nav a[aria-current] {
-  background:#e2edff;
+  background:light-dark(#e2edff, #273c60);
   font-weight:700;
 }
 .intro {
@@ -124,7 +124,7 @@ h2 {
 }
 .track {
   height:12px;
-  background:#edf2fa;
+  background:light-dark(#edf2fa, #2a3953);
   border-radius:8px;
   overflow:hidden;
 }
@@ -155,7 +155,7 @@ h2 {
 }
 .day i {
   display:block;
-  background:#3468b3;
+  background:light-dark(#3468b3, #6299e5);
   border-radius:4px 4px 0 0;
 }
 .day time {
@@ -179,7 +179,7 @@ select,input {
 }
 select {
   width:100%;
-  background:#f7faff;
+  background:light-dark(#f7faff, #22324c);
   border:1px solid var(--line);
   padding:9px;
   border-radius:8px;
@@ -213,7 +213,7 @@ li {
   grid-template-columns:13px 1fr auto;
   gap:10px;
   align-items:center;
-  border-bottom:1px solid #edf2fa;
+  border-bottom:1px solid light-dark(#edf2fa, #2a3953);
   padding:7px 0;
   font-size:.9rem;
 }
@@ -238,4 +238,34 @@ footer {
 .intro {
   padding-top:28px;
 }
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+#color-theme {
+  width: auto;
+  margin-left: auto;
+}
+
+.top nav { margin-left: auto; }
+.charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.charts > .card { overflow: hidden; }
+
+.leaders {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leaders li { grid-template-columns: 1fr auto; }
+
+@media (max-width: 720px) {
+  .charts { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 440px) {
+  .top { gap: 4px 8px; flex-wrap: wrap; padding-top: 8px; }
+  .top nav { order: 1; width: 100%; margin-left: 0; }
+  .top nav a { padding: 5px 8px; }
 }

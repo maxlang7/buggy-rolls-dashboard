@@ -34,19 +34,37 @@ season.hills.forEach(([name, count], index) => {
   el('hill-bars').append(row);
 });
 
-const maxDay = Math.max(...season.dates.map(([, count]) => count));
 const dateFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
-for (const [date, count] of season.dates) {
-  const day = make('div', undefined, 'day');
-  const stack = make('div', undefined, 'day-stack');
-  const bar = make('i');
-  bar.style.height = 144 * count / maxDay + 'px';
-  bar.setAttribute('aria-hidden', 'true');
-  stack.append(make('strong', count), bar);
-  const label = make('time', dateFormat.format(new Date(date)));
-  label.dateTime = date;
-  day.append(stack, label);
-  el('days').append(day);
+function renderDays(id, countColumn) {
+  const max = Math.max(1, ...season.dates.map(row => row[countColumn]));
+  for (const row of season.dates) {
+    const [date] = row;
+    const count = row[countColumn];
+    const day = make('div', undefined, 'day');
+    const stack = make('div', undefined, 'day-stack');
+    const bar = make('i');
+    bar.style.height = 144 * count / max + 'px';
+    bar.setAttribute('aria-hidden', 'true');
+    stack.append(make('strong', count), bar);
+    const label = make('time', dateFormat.format(new Date(date)));
+    label.dateTime = date;
+    day.append(stack, label);
+    el(id).append(day);
+  }
+}
+
+renderDays('buggies-per-day', 1);
+renderDays('hills-per-day', 2);
+
+const leaders = pushers.map(([name, ...counts], index) => ({
+  name, index, total: counts.reduce((sum, count) => sum + count, 0),
+})).sort((a, b) => b.total - a.total).slice(0, 5);
+for (const { name, index, total } of leaders) {
+  const row = make('li');
+  const link = make('a', name);
+  link.href = '#pusher-' + index;
+  row.append(link, make('strong', total));
+  el('leaders').append(row);
 }
 
 const mode = el('mode');
@@ -64,6 +82,9 @@ function draw(parts, total) {
   cancelAnimationFrame(frame);
   if (!ctx) return;
   const donut = style.value === 'donut';
+  const palette = getComputedStyle(el('wheel').closest('.card'));
+  const background = palette.backgroundColor;
+  const ink = palette.color;
   const start = performance.now();
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const tau = Math.PI * 2;
@@ -88,9 +109,9 @@ function draw(parts, total) {
     if (donut) {
       ctx.beginPath();
       ctx.arc(360, 360, 153, 0, tau);
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = background;
       ctx.fill();
-      ctx.fillStyle = '#142643';
+      ctx.fillStyle = ink;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = '700 68px system-ui';
@@ -146,7 +167,7 @@ function updateChart() {
   draw(parts, total);
 }
 
-function updateSelection() {
+function updateSelection(index = 0) {
   const byHill = mode.value === 'hill';
   el('selection-label').textContent = byHill ? 'Hill' : 'Pusher';
   selection.replaceChildren(...(byHill ? season.hills : pushers).map(([name], index) => {
@@ -154,22 +175,45 @@ function updateSelection() {
     option.value = index;
     return option;
   }));
+  selection.value = index;
   updateChart();
 }
 
 function route() {
-  const active = location.hash === '#explore' ? 'explore' : 'overview';
+  const pusherMatch = /^#pusher-(\d+)$/.exec(location.hash);
+  const pusherIndex = pusherMatch ? Number(pusherMatch[1]) : -1;
+  const showPusher = Boolean(pushers[pusherIndex]);
+  const active = location.hash === '#explore' || showPusher ? 'explore' : 'overview';
   for (const id of ['overview', 'explore']) {
     el(id).hidden = id !== active;
     const link = document.querySelector('nav a[href="#' + id + '"]');
     if (id === active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }
-  if (active === 'explore') updateChart();
+  if (showPusher) {
+    mode.value = 'pusher';
+    updateSelection(pusherIndex);
+    window.scrollTo(0, 0);
+  } else if (active === 'explore') {
+    updateChart();
+  }
 }
 
-mode.addEventListener('change', updateSelection);
+mode.addEventListener('change', () => updateSelection());
 for (const input of [selection, theme, style]) input.addEventListener('change', updateChart);
 window.addEventListener('hashchange', route);
+const colorTheme = el('color-theme');
+colorTheme.value = document.documentElement.dataset.theme ?? 'system';
+colorTheme.addEventListener('change', () => {
+  if (colorTheme.value === 'system') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = colorTheme.value;
+  try {
+    localStorage.setItem('rolls-color-theme', colorTheme.value);
+  } catch {}
+  if (!el('explore').hidden) updateChart();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (!el('explore').hidden && colorTheme.value === 'system') updateChart();
+});
 updateSelection();
 route();
