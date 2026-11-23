@@ -7,7 +7,7 @@ const make = (tag, text, className) => {
   if (className) node.className = className;
   return node;
 };
-const colors = ['#42b298', '#e9b753', '#a38ee2', '#ed8f77', '#79a9e7', '#d88eba', '#9eb85f', '#65c2ca'];
+const colors = ['#3468b3', '#e9b753', '#a38ee2', '#ed8f77', '#87bbe9', '#d88eba', '#9eb85f', '#65c2ca'];
 const themes = {
   course: ['🚩', '👟', '🛞', '🏃', '⚡', '🏁', '🧢', '⏱️'],
   weather: ['☀️', '🌧️', '🌈', '⛅', '🌩️', '❄️', '💨', '🌙'],
@@ -90,7 +90,7 @@ function draw(parts, total) {
       ctx.arc(360, 360, 153, 0, tau);
       ctx.fillStyle = '#fff';
       ctx.fill();
-      ctx.fillStyle = '#192a26';
+      ctx.fillStyle = '#142643';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = '700 68px system-ui';
@@ -109,7 +109,7 @@ function draw(parts, total) {
         ctx.font = Math.min(56, radius * width * 0.72) + 'px system-ui';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#192a26';
+        ctx.fillStyle = '#142643';
         ctx.fillText(part.emoji, 360 + radius * Math.cos(middle), 360 + radius * Math.sin(middle));
       }
       angle += width;
@@ -122,7 +122,7 @@ function updateChart() {
   const byHill = mode.value === 'hill';
   const index = Number(selection.value);
   const label = byHill ? season.hills[index][0] : pushers[index][0];
-  let rows = byHill
+  const rows = byHill
     ? pushers.map(([name, ...counts]) => [name, counts[index]]).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1])
     : season.hills.map(([name], hill) => [name, pushers[index][hill + 1], hill]).filter(([, count]) => count > 0);
   const parts = rows.map(([name, count, hill], i) => {
