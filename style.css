@@ -288,6 +288,27 @@ footer {
   gap:14px;
 }
 
+.fun-stats { margin-top:24px; }
+
+.fun-records {
+  display:grid;
+  gap:20px;
+  margin:0;
+}
+
+.fun-records dt { color:var(--muted); }
+
+.fun-records dd {
+  margin:0;
+  font-size:1.5rem;
+  font-weight:700;
+}
+
+#driver-chart .breakdown {
+  gap:18px;
+  padding:0;
+}
+
 .hill-charts .breakdown {
   gap:18px;
   padding:0;

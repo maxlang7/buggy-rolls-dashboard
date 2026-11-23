@@ -148,27 +148,38 @@ function createBreakdown(container) {
 
   return function render(label, rows, animate) {
     const total = rows.reduce((sum, [, count]) => sum + count, 0);
+    const scale = total || 1;
     let cumulative = 0;
-    slices = rows.map(([name, count, hill], i) => {
-      const from = origin + tau * cumulative / total;
+    const parts = rows.map(([name, count, hill], i) => {
+      const from = origin + tau * cumulative / scale;
       cumulative += count;
       return {
-        name, count, from, end: origin + tau * cumulative / total,
+        name, count, from, end: origin + tau * cumulative / scale,
         color: colors[(hill ?? i) % colors.length],
       };
     });
+    slices = parts.filter(part => part.count > 0);
     title.textContent = label;
     note.textContent = total + (total === 1 ? ' assignment' : ' assignments');
-    legend.replaceChildren(...slices.map(({ name, count, color }) => {
+    legend.replaceChildren(...parts.map(({ name, count, color }) => {
       const li = make('li');
       const dot = make('span', undefined, 'dot');
       dot.style.background = color;
-      li.append(dot, make('span', name), make('strong', count + ' · ' + (100 * count / total).toFixed(1) + '%'));
+      li.append(dot, make('span', name), make('strong', count + ' · ' + (100 * count / scale).toFixed(1) + '%'));
       return li;
     }));
     draw(total, animate);
   };
 }
+
+const shoveOffs = pushers.map(([name, hill1, hill2, , hill3, hill4]) => [name, hill1 + hill2 + hill3 + hill4]);
+const [shoveOffLeader, shoveOffCount] = shoveOffs.reduce((leader, pusher) => pusher[1] > leader[1] ? pusher : leader);
+el('shove-off-record').textContent = shoveOffLeader + ' · ' + shoveOffCount;
+
+const driverRows = ['Anika', 'Adrienne', 'Huahua', 'Khadija', 'Ashley'].map(name =>
+  [name, rankedPushers.find(pusher => pusher.name === name)?.total ?? 0]
+).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+const renderDriverChart = createBreakdown(el('driver-chart'));
 
 const hillCharts = season.hills.map(([label], index) => {
   const card = make('article', undefined, 'card');
@@ -210,6 +221,7 @@ function updatePusher(animate) {
 }
 
 function renderActive(animate) {
+  if (!el('overview').hidden) renderDriverChart('Hills pushed by drivers', driverRows, animate);
   if (!el('explore').hidden) hillCharts.forEach(render => render(animate));
   if (!el('pushers').hidden) updatePusher(animate);
 }

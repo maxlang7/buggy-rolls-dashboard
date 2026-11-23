@@ -11,9 +11,9 @@
     if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
   } catch {}
 </script>
-<link rel="stylesheet" href="style.css?v=overview-totals">
+<link rel="stylesheet" href="style.css?v=fun-stats">
 <script defer src="data.js?v=overview-totals"></script>
-<script defer src="app.js?v=overview-totals"></script>
+<script defer src="app.js?v=fun-stats"></script>
 </head>
 <body>
 <header><div class="shell top">
@@ -33,6 +33,18 @@
 <article class="card"><h2>Buggies rolled per day</h2><p class="muted">Completed rolls, excluding scratches.</p><div id="buggies-per-day" class="days"></div></article>
 <article class="card"><h2>Hills pushed per day</h2><p class="muted">Each occupied hill slot counts once.</p><div id="hills-per-day" class="days"></div></article>
 </div>
+<section class="fun-stats" aria-labelledby="fun-stats-title">
+  <h2 id="fun-stats-title">Fun stats</h2>
+  <div class="charts">
+    <article class="card">
+      <dl class="fun-records">
+        <div><dt>Most shove-offs</dt><dd id="shove-off-record"></dd></div>
+        <div><dt>Most falls</dt><dd>Max L · 1</dd></div>
+      </dl>
+    </article>
+    <article class="card" id="driver-chart"></article>
+  </div>
+</section>
 </section>
 <section id="explore" hidden>
 <div class="intro"><p class="season">2026–27 season</p><h1>Explore the hills</h1></div>
