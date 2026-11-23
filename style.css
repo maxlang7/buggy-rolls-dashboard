@@ -81,7 +81,7 @@ h2 {
   gap:14px;
 }
 .stats {
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(4,1fr);
   margin-bottom:14px;
 }
 .charts {
@@ -304,13 +304,50 @@ footer {
   font-weight:700;
 }
 
-.fall-photo {
+.record-photo {
   display:block;
   width:100%;
   max-width:25rem;
   height:auto;
   margin-top:10px;
   border-radius:10px;
+}
+
+.ironman-record {
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+}
+
+.pusher-ironmans { margin:0 0 18px; }
+
+.welcome-screen {
+  width:min(90vw, 25rem);
+  max-width:none;
+  max-height:90dvh;
+  margin:auto;
+  border:0;
+  border-radius:16px;
+  padding:0;
+  background:#101a2b;
+  color:#fff;
+  text-align:center;
+}
+
+.welcome-screen::backdrop { background:#101a2b; }
+
+.welcome-screen img {
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:72dvh;
+  object-fit:contain;
+}
+
+.welcome-screen p {
+  margin:0;
+  padding:10px;
+  font-weight:800;
 }
 
 #driver-chart .breakdown {

@@ -13,6 +13,7 @@ const overviewStats = [
   ['Total hills pushed', season.hills.reduce((sum, [, count]) => sum + count, 0)],
   ['Buggies rolled', season.dates.reduce((sum, [, count]) => sum + count, 0)],
   ['Pushers', pushers.length],
+  ['Ironmans', Object.values(ironmansByPusher).reduce((sum, count) => sum + count, 0)],
 ];
 for (const [name, count] of overviewStats) {
   const stat = make('div', undefined, 'stat');
@@ -175,6 +176,7 @@ function createBreakdown(container) {
 const shoveOffs = pushers.map(([name, hill1, hill2, , hill3, hill4]) => [name, hill1 + hill2 + hill3 + hill4]);
 const [shoveOffLeader, shoveOffCount] = shoveOffs.reduce((leader, pusher) => pusher[1] > leader[1] ? pusher : leader);
 el('shove-off-record').textContent = shoveOffLeader + ' · ' + shoveOffCount;
+el('jack-ironmans').textContent = ironmansByPusher.Jack ?? 0;
 
 const driverRows = ['Anika', 'Adrienne', 'Huahua', 'Khadija', 'Ashley'].map(name =>
   [name, rankedPushers.find(pusher => pusher.name === name)?.total ?? 0]
@@ -202,6 +204,7 @@ const partnerLabels = ['Most received from', 'Most pushes to', 'Most exchanges o
 function updatePusher(animate) {
   const index = Number(selection.value);
   const [name, ...counts] = pushers[index];
+  el('pusher-ironmans').textContent = ironmansByPusher[name] ?? 0;
   const rows = season.hills.map(([hill], i) => [hill, counts[i], i]).filter(([, count]) => count > 0);
   renderPusherChart(name, rows, animate);
   el('partner-results').replaceChildren(...favoritePartners[index].map((partner, i) => {

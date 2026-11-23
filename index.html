@@ -12,11 +12,29 @@
     if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
   } catch {}
 </script>
-<link rel="stylesheet" href="style.css?v=fall-photo">
-<script defer src="data.js?v=overview-totals"></script>
-<script defer src="app.js?v=fun-stats"></script>
+<link rel="stylesheet" href="style.css?v=ironmans">
+<script defer src="data.js?v=ironmans"></script>
+<script defer src="app.js?v=ironmans"></script>
 </head>
 <body>
+<dialog class="welcome-screen" id="welcome-screen" aria-label="Loading SDC Buggy Rolls">
+  <img id="welcome-photo" width="1500" height="2000" alt="">
+  <p>SDC Buggy Rolls</p>
+</dialog>
+<script>
+  {
+    const welcome = document.getElementById('welcome-screen');
+    const storageKey = 'sdc-buggy-welcome-seen';
+    let seen = false;
+    try { seen = localStorage.getItem(storageKey) === 'yes'; } catch {}
+    if (!seen && typeof welcome.showModal === 'function') {
+      document.getElementById('welcome-photo').src = 'splash-photo.png';
+      welcome.showModal();
+      try { localStorage.setItem(storageKey, 'yes'); } catch {}
+      setTimeout(() => { if (welcome.open) welcome.close(); }, 3000);
+    }
+  }
+</script>
 <header><div class="shell top">
   <a class="brand" href="#overview">SDC Buggy Rolls</a>
   <nav aria-label="Dashboard"><a href="#overview">Overview</a><a href="#explore">Hills</a><a href="#pushers">Pushers</a></nav>
@@ -43,12 +61,22 @@
         <div>
           <dt>Most falls</dt>
           <dd>Max L · 1
-            <img class="fall-photo" src="max-fall.png" width="1274" height="870" loading="lazy" alt="Max L falling on the course as the buggy rolls ahead.">
+            <img class="record-photo" src="max-fall.png" width="1274" height="870" loading="lazy" alt="Max L falling on the course as the buggy rolls ahead.">
           </dd>
         </div>
       </dl>
     </article>
-    <article class="card" id="driver-chart"></article>
+    <article class="card">
+      <div id="driver-chart"></div>
+      <dl class="fun-records ironman-record">
+        <div>
+          <dt>Ironman Warrior</dt>
+          <dd>Jack · <span id="jack-ironmans"></span> Ironmans
+            <img class="record-photo" src="jack-ironman.png" width="1280" height="960" loading="lazy" alt="Jack running behind a purple buggy on the course.">
+          </dd>
+        </div>
+      </dl>
+    </article>
   </div>
 </section>
 </section>
@@ -61,6 +89,7 @@
 <div class="card">
 <label class="pusher-picker">Pusher<select id="selection"></select></label>
 <div id="pusher-chart"></div>
+<p class="pusher-ironmans"><strong id="pusher-ironmans"></strong> Ironmans <span class="muted">· Hills 3, 4, and 5 on the same roll</span></p>
 <section class="partners" aria-labelledby="partners-title">
   <h2 id="partners-title">Favorite partners</h2>
   <dl id="partner-results"></dl>
