@@ -133,18 +133,19 @@ h2 {
   border-radius:inherit;
 }
 .days {
-  display:flex;
+  display:grid;
+  grid-auto-flow:column;
+  grid-auto-columns:minmax(25px, 1fr);
+  grid-template-rows:1fr auto;
   gap:5px;
   min-height:224px;
   overflow-x:auto;
   padding-bottom:4px;
 }
 .day {
-  flex:1;
-  min-width:25px;
   display:grid;
-  grid-template-rows:1fr auto;
-  gap:5px;
+  grid-row:1 / span 2;
+  grid-template-rows:subgrid;
   text-align:center;
   font-size:.75rem;
 }
