@@ -353,7 +353,14 @@ footer {
 .welcome-screen::backdrop { background:transparent; }
 
 .welcome-screen img,
-.welcome-screen canvas,
+.welcome-screen canvas {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:calc(100% - 96px);
+  object-fit:contain;
+}
+
 .welcome-flash {
   position:absolute;
   inset:0;
@@ -361,14 +368,12 @@ footer {
   height:100%;
 }
 
-.welcome-screen img { object-fit:contain; }
-
 .welcome-screen canvas {
-  object-fit:cover;
-  object-position:center 62%;
   image-rendering:pixelated;
   opacity:0;
 }
+
+#welcome-team { opacity:0; }
 
 .welcome-flash {
   background:#e9efff;

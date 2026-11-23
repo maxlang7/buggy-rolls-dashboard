@@ -12,16 +12,17 @@
     if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
   } catch {}
 </script>
-<link rel="stylesheet" href="style.css?v=team-intro">
-<script defer src="welcome.js"></script>
+<link rel="stylesheet" href="style.css?v=pushers-intro">
+<script defer src="welcome.js?v=pushers-intro"></script>
 <script defer src="data.js?v=backhill-pairs"></script>
 <script defer src="app.js?v=ironmans"></script>
 </head>
 <body>
-<img class="team-backdrop" id="team-photo" src="team-photo.webp" width="1600" height="1200" fetchpriority="high" alt="">
+<img class="team-backdrop" id="team-photo" src="pushers-team.webp" width="2000" height="1500" fetchpriority="high" alt="">
 <dialog class="welcome-screen" id="welcome-screen" aria-label="Loading SDC Buggy Rolls">
   <img id="welcome-photo" width="1500" height="2000" alt="">
   <canvas id="welcome-pixels" aria-hidden="true"></canvas>
+  <img id="welcome-team" width="2000" height="1500" alt="">
   <div class="welcome-flash" id="welcome-flash" aria-hidden="true"></div>
   <div class="welcome-progress">
     <p>SDC Buggy Rolls</p>
