@@ -14,7 +14,6 @@
 <link rel="stylesheet" href="style.css">
 <script defer src="data.js"></script>
 <script defer src="app.js"></script>
-<script defer src="progress.js"></script>
 </head>
 <body>
 <header><div class="shell top">
@@ -34,18 +33,6 @@
 <article class="card"><h2>Buggies rolled per day</h2><p class="muted">Completed rolls, excluding scratches.</p><div id="buggies-per-day" class="days"></div></article>
 <article class="card"><h2>Hills pushed per day</h2><p class="muted">Each occupied hill slot counts once.</p><div id="hills-per-day" class="days"></div></article>
 </div>
-<article class="card progress-card">
-  <div class="progress-header">
-    <div><h2>Hills pushed over time</h2><p class="muted">Cumulative hill assignments for the season’s top 10 pushers.</p></div>
-    <button id="progress-replay" type="button">Replay</button>
-  </div>
-  <svg id="pusher-progress" viewBox="0 0 740 320" role="img" aria-labelledby="progress-title">
-    <title id="progress-title">Cumulative hill assignments by rolls date for the top 10 pushers</title>
-    <g id="progress-axes"></g>
-    <g id="progress-lines"></g>
-  </svg>
-  <ul id="progress-legend" aria-label="Pushers and final hill assignment totals"></ul>
-</article>
 </section>
 <section id="explore" hidden>
 <div class="intro"><p class="season">2026–27 season</p><h1>Explore the hills</h1></div>
