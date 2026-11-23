@@ -9,11 +9,16 @@ const make = (tag, text, className) => {
 };
 const colors = ['#3468b3', '#e9b753', '#a38ee2', '#ed8f77', '#87bbe9', '#d88eba', '#9eb85f', '#65c2ca'];
 
-['Total pushes', 'Hill assignments', 'Logged rows', 'Pushers'].forEach((name, index) => {
+const overviewStats = [
+  ['Total hills pushed', season.hills.reduce((sum, [, count]) => sum + count, 0)],
+  ['Buggies rolled', season.dates.reduce((sum, [, count]) => sum + count, 0)],
+  ['Pushers', pushers.length],
+];
+for (const [name, count] of overviewStats) {
   const stat = make('div', undefined, 'stat');
-  stat.append(make('strong', season.stats[index]), make('span', name));
+  stat.append(make('strong', count), make('span', name));
   el('stats').append(stat);
-});
+}
 
 const maxHill = Math.max(...season.hills.map(([, count]) => count));
 season.hills.forEach(([name, count], index) => {
