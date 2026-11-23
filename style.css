@@ -165,7 +165,7 @@ h2 {
 }
 .controls {
   display:grid;
-  grid-template-columns:1fr 1.5fr 1fr 1fr;
+  grid-template-columns:1fr 1.5fr;
   gap:12px;
 }
 label {

@@ -8,13 +8,6 @@ const make = (tag, text, className) => {
   return node;
 };
 const colors = ['#3468b3', '#e9b753', '#a38ee2', '#ed8f77', '#87bbe9', '#d88eba', '#9eb85f', '#65c2ca'];
-const themes = {
-  course: ['🚩', '👟', '🛞', '🏃', '⚡', '🏁', '🧢', '⏱️'],
-  weather: ['☀️', '🌧️', '🌈', '⛅', '🌩️', '❄️', '💨', '🌙'],
-  fruit: ['🍓', '🍋', '🍇', '🍑', '🫐', '🍉', '🥝', '🥥'],
-  space: ['🌍', '🌙', '🪐', '☄️', '🚀', '⭐', '👽', '🛰️'],
-  animals: ['🐢', '🐝', '🦋', '🦊', '🐳', '🐙', '🐸', '🦜'],
-};
 
 ['Total pushes', 'Hill assignments', 'Logged rows', 'Pushers'].forEach((name, index) => {
   const stat = make('div', undefined, 'stat');
@@ -69,8 +62,6 @@ for (const { name, index, total } of leaders) {
 
 const mode = el('mode');
 const selection = el('selection');
-const theme = el('theme');
-const style = el('style');
 const canvas = make('canvas');
 canvas.width = canvas.height = 720;
 canvas.setAttribute('aria-hidden', 'true');
@@ -81,10 +72,7 @@ let frame;
 function draw(parts, total) {
   cancelAnimationFrame(frame);
   if (!ctx) return;
-  const donut = style.value === 'donut';
-  const palette = getComputedStyle(el('wheel').closest('.card'));
-  const background = palette.backgroundColor;
-  const ink = palette.color;
+  const ink = getComputedStyle(el('wheel')).color;
   const start = performance.now();
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const tau = Math.PI * 2;
@@ -99,42 +87,19 @@ function draw(parts, total) {
       const revealed = Math.min(end, origin + tau * sweep);
       if (revealed <= angle) break;
       ctx.beginPath();
-      ctx.moveTo(360, 360);
       ctx.arc(360, 360, 340, angle, revealed);
+      ctx.arc(360, 360, 153, revealed, angle, true);
       ctx.closePath();
       ctx.fillStyle = part.color;
       ctx.fill();
       angle = end;
     }
-    if (donut) {
-      ctx.beginPath();
-      ctx.arc(360, 360, 153, 0, tau);
-      ctx.fillStyle = background;
-      ctx.fill();
-      ctx.fillStyle = ink;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = '700 68px system-ui';
-      ctx.fillText(total, 360, 360);
-    }
-    if (progress < 1) {
-      frame = requestAnimationFrame(paint);
-      return;
-    }
-    angle = origin;
-    for (const part of parts) {
-      const width = tau * part.count / total;
-      if (width >= 0.105) {
-        const middle = angle + width / 2;
-        const radius = donut ? 250 : 225;
-        ctx.font = Math.min(56, radius * width * 0.72) + 'px system-ui';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#142643';
-        ctx.fillText(part.emoji, 360 + radius * Math.cos(middle), 360 + radius * Math.sin(middle));
-      }
-      angle += width;
-    }
+    ctx.fillStyle = ink;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '700 68px system-ui';
+    ctx.fillText(total, 360, 360);
+    if (progress < 1) frame = requestAnimationFrame(paint);
   }
   frame = requestAnimationFrame(paint);
 }
@@ -148,19 +113,16 @@ function updateChart() {
     : season.hills.map(([name], hill) => [name, pushers[index][hill + 1], hill]).filter(([, count]) => count > 0);
   const parts = rows.map(([name, count, hill], i) => {
     const palette = hill ?? i;
-    return { name, count, color: colors[palette % colors.length], emoji: themes[theme.value][palette % themes[theme.value].length] };
+    return { name, count, color: colors[palette % colors.length] };
   });
   const total = parts.reduce((sum, part) => sum + part.count, 0);
   el('chart-title').textContent = label;
   el('chart-note').textContent = total + (total === 1 ? ' assignment' : ' assignments');
-  el('legend').replaceChildren(...parts.map(({ name, count, color, emoji }) => {
+  el('legend').replaceChildren(...parts.map(({ name, count, color }) => {
     const li = make('li');
     const dot = make('span', undefined, 'dot');
     dot.style.background = color;
     const label = make('span', name);
-    const icon = make('span', emoji + ' ');
-    icon.setAttribute('aria-hidden', 'true');
-    label.prepend(icon);
     li.append(dot, label, make('strong', count + ' · ' + (100 * count / total).toFixed(1) + '%'));
     return li;
   }));
@@ -200,7 +162,7 @@ function route() {
 }
 
 mode.addEventListener('change', () => updateSelection());
-for (const input of [selection, theme, style]) input.addEventListener('change', updateChart);
+selection.addEventListener('change', updateChart);
 window.addEventListener('hashchange', route);
 const colorTheme = el('color-theme');
 colorTheme.value = document.documentElement.dataset.theme ?? 'system';
